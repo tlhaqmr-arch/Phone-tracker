@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Number Location Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        input[type="tel"] {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input[type="tel"]:focus {
+            border-color: #2575fc;
+            outline: none;
+        }
+
+        button {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .location-info {
+            margin-bottom: 20px;
+        }
+
+        .location-info h3 {
+            color: #2575fc;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .map-container {
+            height: 300px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loader.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2575fc;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            header {
+                padding: 20px 15px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Phone Number Location Tracker</h1>
+            <p>Enter a phone number to track its approximate location</p>
+        </header>
+        
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="phone-number">Phone Number</label>
+                    <input type="tel" id="phone-number" placeholder="Enter phone number with country code (e.g., +1234567890)" required>
+                </div>
+                <button id="track-btn">Track Location</button>
+            </div>
+            
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                <p>Tracking location...</p>
+            </div>
+            
+            <div class="result-section" id="result-section">
+                <div class="location-info">
+                    <h3>Location Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Country</div>
+                            <div class="info-value" id="country">United States</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">City/Region</div>
+                            <div class="info-value" id="city">New York</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Time Zone</div>
+                            <div class="info-value" id="timezone">UTC-5 (EST)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Carrier</div>
+                            <div class="info-value" id="carrier">AT&T</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="map-container" id="map">
+                    Map would appear here in a real application
+                </div>
+            </div>
+            
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This is a demonstration website only. Actual phone number location tracking requires specialized services, proper authorization, and compliance with privacy laws. This simulation uses randomly generated data for demonstration purposes.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const trackBtn = document.getElementById('track-btn');
+            const phoneInput = document.getElementById('phone-number');
+            const resultSection = document.getElementById('result-section');
+            const loader = document.getElementById('loader');
+            
+            // Sample data for demonstration
+            const sampleData = {
+                '+1': {
+                    country: 'United States',
+                    cities: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+                    timezone: 'UTC-5 (EST)',
+                    carriers: ['AT&T', 'Verizon', 'T-Mobile', 'Sprint']
+                },
+                '+44': {
+                    country: 'United Kingdom',
+                    cities: ['London', 'Manchester', 'Birmingham', 'Glasgow', 'Liverpool'],
+                    timezone: 'UTC+0 (GMT)',
+                    carriers: ['Vodafone', 'O2', 'EE', 'Three']
+                },
+                '+91': {
+                    country: 'India',
+                    cities: ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai'],
+                    timezone: 'UTC+5:30 (IST)',
+                    carriers: ['Airtel', 'Jio', 'Vodafone Idea', 'BSNL']
+                },
+                '+49': {
+                    country: 'Germany',
+                    cities: ['Berlin', 'Munich', 'Hamburg', 'Cologne', 'Frankfurt'],
+                    timezone: 'UTC+1 (CET)',
+                    carriers: ['Telekom', 'Vodafone', 'O2', '1&1']
+                },
+                '+81': {
+                    country: 'Japan',
+                    cities: ['Tokyo', 'Osaka', 'Kyoto', 'Yokohama', 'Nagoya'],
+                    timezone: 'UTC+9 (JST)',
+                    carriers: ['NTT Docomo', 'SoftBank', 'KDDI', 'Rakuten Mobile']
+                }
+            };
+            
+            trackBtn.addEventListener('click', function() {
+                const phoneNumber = phoneInput.value.trim();
+                
+                // Basic phone number validation
+                if (!phoneNumber) {
+                    alert('Please enter a phone number');
+                    return;
+                }
+                
+                if (!phoneNumber.startsWith('+')) {
+                    alert('Please include country code (e.g., +1 for US)');
+                    return;
+                }
+                
+                // Show loader
+                loader.classList.add('active');
+                resultSection.classList.remove('active');
+                
+                // Simulate API call delay
+                setTimeout(() => {
+                    // Extract country code
+                    const countryCode = phoneNumber.substring(0, 3);
+                    
+                    // Get data for country or use default
+                    const countryData = sampleData[countryCode] || {
+                        country: 'Unknown',
+                        cities: ['Unknown City'],
+                        timezone: 'Unknown',
+                        carriers: ['Unknown Carrier']
+                    };
+                    
+                    // Randomly select values for demonstration
+                    const randomCity = countryData.cities[Math.floor(Math.random() * countryData.cities.length)];
+                    const randomCarrier = countryData.carriers[Math.floor(Math.random() * countryData.carriers.length)];
+                    
+                    // Update UI with results
+                    document.getElementById('country').textContent = countryData.country;
+                    document.getElementById('city').textContent = randomCity;
+                    document.getElementById('timezone').textContent = countryData.timezone;
+                    document.getElementById('carrier').textContent = randomCarrier;
+                    
+                    // Hide loader and show results
+                    loader.classList.remove('active');
+                    resultSection.classList.add('active');
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+                      </html>
